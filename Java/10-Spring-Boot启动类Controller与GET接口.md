@@ -1,6 +1,226 @@
 # Spring Boot 启动类、Controller 与第一个 GET 接口
 
+## 最新实践记录（2026-11-04）
+
+BizVision 模板工程已编译通过；用户反馈访问 GET /hello?name=Java 得到 Hello Java，确认模板启动及首次 GET 请求成功。此处实践的是模板 BasicController 的字符串响应与查询参数，并非本篇所有示例。概念学习有、讲解答题有；编译运行有（限模板）；项目实践有入门操作，商品业务未完成。下文各阶段旧的“待实践”描述为当时记录，其他接口与数据库仍待验证。下一步：预测并访问 name=BizVision 和省略 name 两种请求，验证默认值。
+
 ## 本主题目标
+
+### 首个自己编写的商品接口（已运行验证）
+
+用户已反馈查询参数与默认值两次访问结果：name=BizVision 对应 Hello BizVision（用户输入首字母小写，已提醒代码输出应为大写）；不传 name 对应 Hello unknown user。
+
+下一步在 BizVision/src/main/java/com/example/bizvision/controller/ProductController.java 创建下面的类。适用 Java 8、Java 17，兼容本项目 Spring Boot 2.7.18；此路径位于启动类包的子包下，可被默认组件扫描发现。
+
+```java
+package com.example.bizvision.controller;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ProductController {
+    @GetMapping("/products/1")
+    public String getProduct() {
+        return "保温杯，库存 20";
+    }
+}
+```
+
+学习者已创建文件并运行，反馈 GET /products/1 返回“保温杯，库存 20”，/products/2 报错。导师通过源码和 HTTP 请求核实：/products/1 返回 200 和该固定文本，/products/2 返回 404 Not Found。本次概念与讲解有、已答题；代码创建有、编译运行有、最小接口实践有，完整商品业务实践未完成。
+
+本次 404 原因：只定义了 /products/1，没有匹配 /products/2 的接口或静态资源；不是 Java 语法、编译、启动错误，也不是执行了库存业务后失败。没有连接数据库，不能据此推断数据库里商品 2 是否存在。
+
+答题记录：学习者认为本次 404 可以说明数据库没有商品 2，回答错误。已解释“路径没有匹配”和“调用接口查询后发现商品不存在”是不同原因，即使二者都可能返回 404，也不能仅凭状态码确定原因。当前 /products/1 返回的名称和库存同样是写死文本，不是数据库查询结果。复答时正确回答不能认定数据库库存为 20，因为当前没有数据库；固定响应与数据库数据的区别复答通过。下一步将固定文本改为商品 JSON。
+
+### Java 8 商品 JSON 实践（已验证）
+
+目标：让 Controller 返回普通 Java 对象，由 Spring Boot 默认配置的 Jackson 转成 JSON，方便前端按字段读取。字段仍为模拟值，不涉及数据库。以下两段均适用 Java 8、Java 17，兼容 Spring Boot 2.7.18；不使用 record。
+
+创建 com.example.bizvision.dto 包，在 ProductResponse.java 中编写：
+
+```java
+package com.example.bizvision.dto;
+
+public class ProductResponse {
+    private final String name;
+    private final int stock;
+
+    public ProductResponse(String name, int stock) {
+        this.name = name;
+        this.stock = stock;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+}
+```
+
+在现有 ProductController 文件顶部导入 com.example.bizvision.dto.ProductResponse，然后替换原 getProduct 方法：
+
+```java
+@GetMapping("/products/1")
+public ProductResponse getProduct() {
+    return new ProductResponse("保温杯", 20);
+}
+```
+
+本例默认 Jackson 通过公开 getter 读取属性。这里只向外输出对象，不讨论请求体反序列化，不需要为此添加 setter。学习者已反馈 /products/1 返回 {"name":"保温杯","stock":20}，正确回答将 20 改为 8 会改变 stock。导师核对源码及 HTTP 请求，验证状态为 200、Content-Type 为 application/json、响应一致。概念与讲解有、答题通过；本次代码创建、编译运行及最小商品 JSON 实践有。修改库存为 8 仅预测，尚未运行验证；无数据库实践。
+
+### Java 8 Service 分层实践（已验证）
+
+本次只把创建固定商品对象的逻辑从 Controller 移到 Service，保留响应结构。Controller 接收请求并调用 Service；Service 提供商品数据，当前仍使用模拟数据。以下两段适用 Java 8、Java 17，兼容 Spring Boot 2.7.18。
+
+创建 com.example.bizvision.service.ProductService：
+
+```java
+package com.example.bizvision.service;
+
+import com.example.bizvision.dto.ProductResponse;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ProductService {
+    public ProductResponse findProduct() {
+        return new ProductResponse("保温杯", 20);
+    }
+}
+```
+
+替换 ProductController：
+
+```java
+package com.example.bizvision.controller;
+
+import com.example.bizvision.dto.ProductResponse;
+import com.example.bizvision.service.ProductService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ProductController {
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @GetMapping("/products/1")
+    public ProductResponse getProduct() {
+        return productService.findProduct();
+    }
+}
+```
+
+@Service 将该类注册为 Spring Bean，Spring 创建 Controller 时经唯一构造器传入 ProductService。无需手动 new ProductService，也无需在这个唯一构造器上添加 @Autowired。ProductResponse 仍由普通 new 创建。保存并重启后访问 /products/1，预期 JSON 不变。
+
+两题回答正确：用户反馈 JSON 仍为 {"name":"保温杯","stock":20}，由 Spring 传入 Service。导师核对源码与实际 HTTP 200 响应，确认 Service 文件已创建、构造器注入链路已运行。学习者将 Controller 方法命名为 findProduct 合法；路径由映射注解决定。概念、讲解答题、编译运行及最小分层实践有，数据库实践没有。
+
+### 路径参数贯穿 Controller 与 Service（已验证）
+
+以下两段适用 Java 8、Java 17，兼容 Spring Boot 2.7.18。保留 Controller 的字段和构造器，增加 import org.springframework.web.bind.annotation.PathVariable;，替换原固定路径方法：
+
+```java
+@GetMapping("/products/{id}")
+public ProductResponse findProduct(@PathVariable("id") long id) {
+    return productService.findProduct(id);
+}
+```
+
+同时替换 Service 的原方法：
+
+```java
+public ProductResponse findProduct(long id) {
+    return new ProductResponse("模拟商品 " + id, 20);
+}
+```
+
+路径 /products/7 中的文本 7 会转换为 long 传入 Controller，再传给 Service。本例不查库，不判断商品是否存在，任何可转换为 long 的 id 都生成模拟结果。/products/abc 无法转为 long，默认返回 400，尚未进入该 Controller 方法体和 Service。这与之前固定路径不匹配导致的 404 不同。
+
+两题回答正确：用户反馈 /products/7 返回 {"name":"模拟商品7","stock":20}，abc 不会进入 Service。导师核对代码及 HTTP 请求：前者为 200，后者为 400 Bad Request。用户代码名称字符串无空格，响应与代码一致。概念讲解、答题、代码修改、编译运行及本次路径参数实践有。
+
+### 模拟商品不存在时返回 404（运行已验证，理解待确认）
+
+当前所有合法 long 编号都返回模拟数据。下一步模拟只有商品 7 存在，使用之前学过的 Optional 表示有无结果，Controller 决定 HTTP 状态。仍未连接数据库。以下代码适用 Java 8、Java 17，兼容 Spring Boot 2.7.18。
+
+Service 导入 java.util.Optional，替换 findProduct：
+
+```java
+public Optional<ProductResponse> findProduct(long id) {
+    if (id == 7) {
+        return Optional.of(new ProductResponse("保温杯", 20));
+    }
+    return Optional.empty();
+}
+```
+
+Controller 导入 java.util.Optional 和 org.springframework.http.ResponseEntity，替换对应方法，保留字段和构造器：
+
+```java
+@GetMapping("/products/{id}")
+public ResponseEntity<ProductResponse> findProduct(@PathVariable("id") long id) {
+    Optional<ProductResponse> result = productService.findProduct(id);
+    if (result.isPresent()) {
+        return ResponseEntity.ok(result.get());
+    }
+    return ResponseEntity.notFound().build();
+}
+```
+
+Optional.empty 表示无结果，不是 Java null；isPresent 为 true 后才取 get。匹配 /products/8 后会进入 Service 并返回空结果，由 Controller 主动返回 404 空响应体；不同于之前固定路径未匹配的 404。该示例由模拟规则判定不存在，不代表数据库查询。
+
+学习者已正确修改两处代码，但怀疑服务没启动。导师检查 Maven compile 成功（编译 7 个主源码文件），Java 进程监听 8080，实际请求 /products/7 得到 200 和 {"name":"保温杯","stock":20}，/products/8 得到 404 且 Content-Length: 0。无需修改代码，行为符合预期。
+
+本次 404 是运行中的 Controller 主动返回的 HTTP 响应；build() 未提供响应体，所以浏览器可能显示空白或自带错误提示。若本机端口没有服务监听，通常表现为连接被拒绝，而不是收到该服务的 HTTP 404。概念讲解有，本轮代码修改、编译运行和最小实践有；区分空响应与服务未启动的理解尚待确认。
+
+后续用户已反馈 /products/7 的商品 JSON 与 /products/8 的 404，结果观察正确，导师再次 HTTP 请求验证一致。执行链路题回答“不会进入 Service、由 Service 决定 404”，两点错误。已逐步说明：8 可以转为 long，匹配 /products/{id} 后进入 Controller，调用 Service 的 findProduct(8)，因 id != 7 返回 Optional.empty()，Controller 检查 isPresent 为 false 后返回 ResponseEntity.notFound().build()。Service 当前只表达有无商品，不决定 HTTP 状态。与 /products/abc 在参数转换阶段失败不同。
+
+纠错复答：正确回答 /products/9 会进入 Service，并指出 ResponseEntity.notFound().build() 这条语句。没有直接给出类名，导师补充：ProductController 决定返回 404，ResponseEntity 用于构造响应。已有概念讲解、答题及纠错记录；既有编译运行与最小实践状态不变。
+
+### 首次断点观察（用户选择跳过，未完成、后补）
+
+用户已明确要求跳过本阶段调试。以下指导仅留作后续参考，当前不再等待断点结果，也不标记调试完成。既有接口运行与最小实践不受影响，后续使用普通 Run 模式继续。
+
+适用当前 Java 8 + Spring Boot 2.7.18 工程，同样适用于 Java 17。停止普通 Run 启动的服务，在 ProductService.findProduct 的 if (id == 7) 行添加断点，通过 IDEA 的 Debug 启动 BizVisionApplication。请求 /products/9 后应暂停在该断点，查看变量 id，再 Resume Program 让请求继续完成。若启动正常，暂停期间浏览器等待响应是预期行为，不是服务启动失败。
+
+待反馈：断点是否命中、id 的实际值、恢复执行后的 HTTP 状态码。已提供调试指导，尚未收到实际操作结果；不能记录断点调试已完成。
+
+用户要求继续，尚未反馈调试结果。继续指导：在 ProductController 的 if (result.isPresent()) 行添加断点；若请求停在之前的 Service 断点，使用 Resume Program 继续到 Controller。若没有暂停请求，则在 Debug 模式重新请求 /products/9。断点停在 if 行时，上一行 Service 调用已经完成，result 已赋值；当前行尚未执行。预期 result 为 Optional.empty，isPresent 为 false，可用 Step Over（单步跳过）观察程序走向返回 404 的语句，再 Resume 完成请求。避免重新启动多个实例占用同一端口。
+
+本次只观察已有代码，不修改业务逻辑。待反馈：result 的实际值、下一条将执行的 return。概念讲解有；单步调试操作仍待确认，既有接口编译运行和最小实践状态不变。
+
+### 商品列表 GET /products（待实践）
+
+本轮目标：单个商品返回对象，商品列表返回 JSON 数组。保留现有详情方法，在 Service 和 Controller 各新增 findAll 方法；依旧使用模拟数据。以下代码适用 Java 8、Java 17，兼容 Spring Boot 2.7.18。
+
+Service 新增 java.util.List 和 java.util.Arrays 导入，并在类内新增：
+
+```java
+public List<ProductResponse> findAll() {
+    return Arrays.asList(
+            new ProductResponse("保温杯", 20),
+            new ProductResponse("炒锅", 5)
+    );
+}
+```
+
+Controller 新增 java.util.List 导入，并在类内新增：
+
+```java
+@GetMapping("/products")
+public List<ProductResponse> findAll() {
+    return productService.findAll();
+}
+```
+
+保存并以普通 Run 重启，访问 GET /products，预期 200 和含两个对象的 JSON 数组。GET /products/{id} 仍为详情路径，两者不冲突。当前没有空列表分支，空列表行为仅作预测：如果 Service 返回空 List，默认返回 200 和 []，不是单个商品不存在时的 404。
+
+待答题：反馈列表实际响应；预测返回空 List 的响应体。文档与概念讲解有，本轮答题、代码修改、编译运行及列表实践待完成；数据库实践没有。
 
 理解应用如何启动、Controller 如何接收 HTTP 请求，以及如何返回一个简单的商品信息。
 

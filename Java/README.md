@@ -33,27 +33,38 @@
 | 接口、多态、构造器注入、多个实现、`default` | 有 | 有 | 没有 | 没有 |
 | 泛型、泛型方法、`? extends` | 有 | 有 | 没有 | 没有 |
 | enum、record、Optional | 有 | 有 | 没有 | 没有 |
-| Maven | 有；本阶段不重复讲 | 有 | 没有 | 没有完整后端项目实践 |
-| Spring Boot 启动类、Controller、GET/POST、Service、构造器注入 | 有 | 有 | 没有；尚未启动项目 | 没有 |
-| JSON、路径参数、查询参数、`@RequestBody`、HTTP 状态码 | 有 | 有 | 没有真实 HTTP 请求 | 没有 |
+| Maven | 有；本阶段不重复讲 | 有 | 导师 compile 成功；用户也已确认编译通过 | 没有完整后端项目实践 |
+| Spring Boot 启动类、Controller、GET/POST、Service、构造器注入 | 有 | 有 | 部分：启动、GET、商品 Controller → Service 构造器注入链路已运行；POST 未验证 | 有：模拟商品查询分层；数据库商品业务未完成 |
+| JSON、路径参数、查询参数、`@RequestBody`、HTTP 状态码 | 有 | 有 | 部分：查询参数、JSON、路径参数传递及转换失败返回 400 已验证；请求体等未验证 | 有：模拟商品查询和参数绑定；请求体等等待实践 |
 | DTO：Request DTO、Response DTO、Entity 的区别 | 有；已通过示例学习 | 有 | 没有 | 没有独立 DTO 实践 |
 | MyBatis Mapper、SQL 参数绑定、结果映射、CRUD | 有 | 有 | 没有真实数据库执行 | 没有 |
 | MySQL 数据源、JDBC 驱动、表结构、分页 | 有部分概念 | 部分 | 没有连接 MySQL 或创建表 | 没有 |
 | 参数校验、全局异常、事务、库存扣减 | 有部分概念 | 部分 | 没有真实验证 | 没有 |
 
-结论：目前已经完成 Spring Boot 和 MyBatis 的主要概念阅读与答题，尚未完成任何 Java 编译、Spring Boot 启动、MySQL 连接和接口运行。后续状态只有在实际验证后，才把“编译运行”或“项目实践”改为“有”。
+结论：主要概念已有阅读与答题。2026-11-04 导师使用 JDK 8 和 Maven 3.8.8 成功编译 BizVision 的 4 个主源码文件（BUILD SUCCESS），用户随后确认编译通过，并反馈访问 /hello?name=Java 得到 Hello Java。已完成模板启动与首次 GET 访问；不表示所有笔记示例已运行或商品业务实践完成。MySQL 连接及测试尚未验证。
 
 ## 示例约定
 
 ### 转入 BizVision 实践：环境核对（2026-11-04）
 
-- 用户表示已创建 BizVision，并计划在其中实践。当前检查的路径为 `/Users/mac/disk2/www/BizVision`，其中是 Node.js + Express 后端和 React 前端；未找到 Java 源码、pom.xml、Gradle 构建文件或 Maven Wrapper。待确认是否另有新建 Java 工程路径，或准备在现有仓库新增 Java 模块。
+- 本次重新检查确认 Java 工程已位于 `/Users/mac/disk2/www/keep-learning/BizVision`（单层 BizVision 目录），以此路径为准。此前检查的外部同名 Node.js + React 项目与本次 Java 实践无关。
+- 本工程已具备 pom.xml、启动类、示例 Controller 和启动测试源码。POM 指定 Java 1.8、Spring Boot 2.7.18、MyBatis starter 2.3.0；IDE 项目 SDK 为 zulu-1.8。测试源码存在不代表已运行通过。
+- 静态检查发现：已引入 MyBatis，但没有配置数据源 URL 和 JDBC 驱动，也未提供内存数据库依赖，默认数据源自动配置预计会导致启动失败；尚未实际启动验证。Spring Boot Maven 插件还设置了 skip=true，后续制作可执行 jar 时需处理，不影响当前先从 IDE 启动的教学目标。
 - 当前终端 `java -version` 与 `javac -version` 均成功返回 1.8.0_442（Zulu 8）；此前“尚未安装 Java 环境”应作为历史状态。`/usr/libexec/java_home -V` 未识别 Java Runtime，环境发现配置仍待核对。
-- `mvn -version` 返回 command not found：当前终端未找到 Maven，不据此断定 IDE 或其他目录也未安装。目标 Maven 版本仍为 3.8.8。
-- 仅检查了版本和项目文件，没有编译 Java 示例、启动 Spring Boot 或连接数据库。概念学习有；编译运行没有；Java 业务项目实践没有，项目目录创建不等于业务实践完成。
-- 新的下一步：确认 Java 工程位置、打通 JDK/Maven 配置，然后只实现并运行一个固定响应的 GET 接口。之后依次补商品 CRUD、参数校验与异常、分页、事务库存扣减和测试。try-catch 与事务回滚影响留到事务实践时讲解。
+- 已通过完整路径验证 `/Users/mac/.sdkman/candidates/maven/3.8.8/bin/mvn`：Maven 3.8.8、Java 1.8.0_442。直接执行 mvn 仍提示找不到命令，属于当前终端 PATH 未加载；IDE 自带 Maven 版本另为 3.9.16，学习工程应选已安装的 3.8.8。
+- 导师已执行 Maven compile，成功编译 4 个主源码文件；用户随后确认编译通过，并反馈 GET /hello?name=Java 返回 Hello Java。概念学习有；编译运行有（仅限当前模板）；项目实践有入门操作，商品业务实践未完成。测试源码仍未验证执行。
+- 已检查到 application.properties 添加了临时排除 DataSourceAutoConfiguration 的配置；接 MySQL 时删除排除项并配置驱动和数据源。本次运行成功是在临时排除数据源的前提下，不代表数据库可用。
+- 用户已反馈 name=BizVision 与不传 name 两次访问结果，查询参数和默认值实践通过。第一条反馈写成小写 hello，现有代码实际应返回 Hello BizVision，已提醒大小写；第二条为 Hello unknown user。
+- 学习者已创建 ProductController 并运行：反馈 /products/1 返回“保温杯，库存 20”，/products/2 报错。导师检查源码并通过 HTTP 请求验证 /products/1 为 200 和固定文本，/products/2 为 404 Not Found。本接口的代码创建、编译运行和最小接口实践已有证据；不是数据库查询或完整商品模块实践。
+- 本次 404 含义题初答错误，已解释路径未匹配不等于数据库商品不存在。随后正确回答“返回库存 20 不能说明数据库库存为 20，因为当前没有数据库”，本次固定响应与数据库数据的区别复答通过。
+- 商品 JSON 实践完成：学习者已创建普通 ProductResponse 类并修改 Controller，反馈响应为 {"name":"保温杯","stock":20}，正确回答修改第二个构造参数会改变 stock。导师核对源码并请求验证 HTTP 200、Content-Type 为 application/json、响应内容一致；尚未实际改为 8 验证。
+- Service 分层实践通过：学习者已创建 ProductService 并完成 Controller 构造器注入，反馈 JSON 不变且由 Spring 注入；导师核对源码并实际请求得到 HTTP 200 与一致 JSON。Controller 方法取名 findProduct 不影响路径映射。概念、答题、该功能编译运行和最小分层实践有；数据仍为模拟值。
+- 路径参数实践通过：用户反馈 /products/7 返回 {"name":"模拟商品7","stock":20}，正确判断 abc 无法转换为 long，不进入 Service。导师核对源码和请求：/products/7 为 200，/products/abc 为 400。实际名称无空格，符合用户代码。
+- Optional 与 ResponseEntity 实践已运行：学习者正确修改代码，但怀疑服务未启动。导师验证 Maven compile 为 BUILD SUCCESS（7 个主源码文件）、Java 进程监听 8080，/products/7 为 200 和商品 JSON，/products/8 为 404 且 Content-Length 为 0。代码无需修复；本次是预期的业务响应，不是编译或启动失败。该功能编译运行和最小实践有，404 空响应与连接失败的区别已解释、待确认理解。数据库、CRUD、校验、分页、事务及测试仍待实践。
 
 默认示例优先使用 Java 8/17 都能理解的写法。商品价格统一以整数“分”保存，字段名为 `priceInCents`，读取方法为 `getPriceInCents()`。
+
+最新答题反馈：用户已报告 /products/7 的商品 JSON 与 /products/8 的 404，导师再次请求验证前者 200、后者 404 且空响应体。执行链路题初答错误，纠正后复答 /products/9 会进入 Service，并正确指出 ResponseEntity.notFound().build() 是构造 404 的语句。尚未直接回答所在类名，已补充：由 ProductController 调用 ResponseEntity 构造响应。该功能已有编译运行与最小实践，数据库实践没有。用户明确要求跳过调试，标记为未完成、后补，不再要求本阶段反馈断点结果。下一步实践商品列表 GET /products（模拟数据），代码与运行待完成。
 
 ## JDK 版本与实际项目
 
