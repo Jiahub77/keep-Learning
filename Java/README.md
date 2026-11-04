@@ -1,6 +1,6 @@
 # Java 学习笔记
 
-更新日期：2026-11-03。
+更新日期：2026-11-04。
 
 ## 学习背景与目标
 
@@ -17,37 +17,49 @@
 7. [易错点与复习清单](07-易错点与复习清单.md)
 8. [接口进阶、泛型、枚举、record 与 Optional](09-接口进阶泛型枚举与Optional.md)
 9. [Java 基础知识](08-Java基础知识.md)：环境与运行、类型、运算符、流程控制、数组、字符串、方法、面向对象、集合、异常、金额与日期。
-10. [Spring Boot 启动类、Controller 与 GET 接口](10-Spring Boot启动类Controller与GET接口.md)
+10. [Spring Boot 启动类、Controller 与 GET 接口](10-Spring-Boot启动类Controller与GET接口.md)
 11. [MyBatis：Mapper 与 SQL 的对应关系](11-MyBatis-Mapper与SQL对应关系.md)
 
 基础语法不熟悉时，可先阅读第 8 篇的第 1～6 节，再回到商品案例。新增资料用于补充学习，不代表已完成实践。
 
 ## 当前进度
 
-| 知识点 | 文档/概念学习 | 编译、运行或项目实践 |
-|---|---|---|
-| Java 类型、类与对象、封装、引用、方法 | 有 | 没有 |
-| List、Map、空值判断、布尔值与短路求值 | 有 | 没有 |
-| Stream 的 `filter`、`map`、统计、排序 | 有 | 没有 |
-| 异常基础、`throw`、`try-catch` | 有 | 没有；练习曾跳过 |
-| 接口、多态、构造器注入、多个实现、`default` | 有 | 没有 |
-| 泛型、泛型方法、`? extends` | 有 | 没有 |
-| enum、record、Optional | 有 | 没有 |
-| Maven | 有；本阶段不重复讲 | 没有完整后端项目实践 |
-| Spring Boot 启动类、Controller、GET/POST、Service、构造器注入 | 有 | 没有；尚未启动项目 |
-| JSON、路径参数、查询参数、`@RequestBody`、HTTP 状态码 | 有 | 没有真实 HTTP 请求 |
-| DTO：Request DTO、Response DTO、Entity 的区别 | 有；已通过示例学习 | 没有独立 DTO 实践 |
-| MyBatis Mapper、SQL 参数绑定、结果映射、CRUD | 有 | 没有真实数据库执行 |
-| MySQL 数据源、JDBC 驱动、表结构、分页 | 有部分概念 | 没有连接 MySQL 或创建表 |
-| 参数校验、全局异常、事务、库存扣减 | 有部分概念 | 没有真实验证 |
+| 知识点 | 概念学习 | 讲解与答题 | 编译运行 | 项目实践 |
+|---|---|---|---|---|
+| Java 类型、类与对象、封装、引用、方法 | 有 | 有 | 没有 | 没有 |
+| List、Map、空值判断、布尔值与短路求值 | 有 | 有 | 没有 | 没有 |
+| Stream 的 `filter`、`map`、统计、排序 | 有 | 有 | 没有 | 没有 |
+| 异常基础、`throw`、`try-catch` | 有 | 部分；练习曾跳过 | 没有 | 没有 |
+| 接口、多态、构造器注入、多个实现、`default` | 有 | 有 | 没有 | 没有 |
+| 泛型、泛型方法、`? extends` | 有 | 有 | 没有 | 没有 |
+| enum、record、Optional | 有 | 有 | 没有 | 没有 |
+| Maven | 有；本阶段不重复讲 | 有 | 没有 | 没有完整后端项目实践 |
+| Spring Boot 启动类、Controller、GET/POST、Service、构造器注入 | 有 | 有 | 没有；尚未启动项目 | 没有 |
+| JSON、路径参数、查询参数、`@RequestBody`、HTTP 状态码 | 有 | 有 | 没有真实 HTTP 请求 | 没有 |
+| DTO：Request DTO、Response DTO、Entity 的区别 | 有；已通过示例学习 | 有 | 没有 | 没有独立 DTO 实践 |
+| MyBatis Mapper、SQL 参数绑定、结果映射、CRUD | 有 | 有 | 没有真实数据库执行 | 没有 |
+| MySQL 数据源、JDBC 驱动、表结构、分页 | 有部分概念 | 部分 | 没有连接 MySQL 或创建表 | 没有 |
+| 参数校验、全局异常、事务、库存扣减 | 有部分概念 | 部分 | 没有真实验证 | 没有 |
 
-结论：目前已经完成 Spring Boot 和 MyBatis 的主要概念阅读与答题，尚未完成任何 Java 编译、Spring Boot 启动、MySQL 连接和接口运行。后续状态只有在实际验证后，才把“编译、运行或项目实践”改为“有”。
+结论：目前已经完成 Spring Boot 和 MyBatis 的主要概念阅读与答题，尚未完成任何 Java 编译、Spring Boot 启动、MySQL 连接和接口运行。后续状态只有在实际验证后，才把“编译运行”或“项目实践”改为“有”。
 
 ## 示例约定
 
-使用 JDK 21。商品价格统一以整数“分”保存，字段名为 `priceInCents`，读取方法为 `getPriceInCents()`。
+### 转入 BizVision 实践：环境核对（2026-11-04）
+
+- 用户表示已创建 BizVision，并计划在其中实践。当前检查的路径为 `/Users/mac/disk2/www/BizVision`，其中是 Node.js + Express 后端和 React 前端；未找到 Java 源码、pom.xml、Gradle 构建文件或 Maven Wrapper。待确认是否另有新建 Java 工程路径，或准备在现有仓库新增 Java 模块。
+- 当前终端 `java -version` 与 `javac -version` 均成功返回 1.8.0_442（Zulu 8）；此前“尚未安装 Java 环境”应作为历史状态。`/usr/libexec/java_home -V` 未识别 Java Runtime，环境发现配置仍待核对。
+- `mvn -version` 返回 command not found：当前终端未找到 Maven，不据此断定 IDE 或其他目录也未安装。目标 Maven 版本仍为 3.8.8。
+- 仅检查了版本和项目文件，没有编译 Java 示例、启动 Spring Boot 或连接数据库。概念学习有；编译运行没有；Java 业务项目实践没有，项目目录创建不等于业务实践完成。
+- 新的下一步：确认 Java 工程位置、打通 JDK/Maven 配置，然后只实现并运行一个固定响应的 GET 接口。之后依次补商品 CRUD、参数校验与异常、分页、事务库存扣减和测试。try-catch 与事务回滚影响留到事务实践时讲解。
+
+默认示例优先使用 Java 8/17 都能理解的写法。商品价格统一以整数“分”保存，字段名为 `priceInCents`，读取方法为 `getPriceInCents()`。
 
 ## JDK 版本与实际项目
+
+2026-11-04 用户确认 Java 8 工作项目版本：JDK 8、Spring Boot 2.7.18、Maven 3.8.8。后续 Java 8 教学以此为基线；参数校验使用 `javax.validation.*`，Servlet 使用 `javax.servlet.*`。Spring/MyBatis 自己的注解仍使用各自的包名，不是所有导入都改为 `javax.*`。此信息仅确认项目技术栈，不代表本机已安装环境或运行项目。Java 17 项目的具体框架版本尚未确认。
+
+本次复习：多个 Mapper 参数的 `@Param` 绑定已有文档与讲解，已答题；参数找不到属于 MyBatis 运行时错误的判断正确。查询结果题曾漏看 `AND stock >= 1`，解释后正确回答 `search("杯", 0)` 返回保温杯和咖啡杯，复答通过。参数命名题回答正确：`@Param("stock")` 对应 `#{stock}`。条件库存扣减题两题正确：初始库存各为 5，扣减 3 返回 1、剩余 2；扣减 8 返回 0、库存仍为 5。返回 0 的含义判断正确：商品不存在也会返回 0，不能仅据此认定库存不足。Service 异常流程题两题正确：rows 为 0 抛异常、不打印成功；rows 为 1 不抛该异常、打印成功。事务回滚对照题结果均正确：事务回滚后库存为 5；无事务且扣减已自动提交时，后续异常不会撤销扣减，库存为 3。已讲解 throw 中断执行与事务回滚的区别；尚未独立口述原因。事务边界题回答正确：扣库存事务已提交后，不能再通过该事务回滚。全局异常响应题回答正确：状态码 409、响应体为异常消息。自定义业务异常两道判断题回答正确，详见第 11 篇末尾；抛出业务异常的单行语句经讲解与纠正后已写对；数量校验条件 quantity <= 0 填写正确；数量校验与库存扣减综合阅读题两题结果正确；下一步：try-catch 对事务回滚的影响（尚未讲解或答题）。概念学习：有；编译运行：没有；项目实践：没有。
 
 学习示例原先按 JDK 21 编写，但实际项目使用 Java 8 和 Java 17，后续按兼容性分层：
 

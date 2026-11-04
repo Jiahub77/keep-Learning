@@ -4,9 +4,14 @@
 
 理解应用如何启动、Controller 如何接收 HTTP 请求，以及如何返回一个简单的商品信息。
 
+## 版本说明
+
+下面的 Spring 注解和分层思想适用于 Java 8、Java 17。使用 `record` 的代码片段仅适用于 Java 16+，本文按 Java 17/21 理解；Java 8 请改用普通 DTO 类。Java 8 项目通常使用支持 Java 8 的 Spring Boot 版本，Java 17 项目可以使用 Spring Boot 3；校验包分别常见 `javax.validation` 与 `jakarta.validation`。
+
 ## 最小示例
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 package com.example.shop;
 
 import org.springframework.boot.SpringApplication;
@@ -53,6 +58,7 @@ class ProductController {
 Controller 负责接收请求，Service 负责业务逻辑。Controller 不应该把查库存、计算价格等业务全部写在请求方法里。
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 @Service
 public class ProductService {
     public String findProductText() {
@@ -62,6 +68,7 @@ public class ProductService {
 ```
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 @RestController
 public class ProductController {
     private final ProductService productService;
@@ -84,6 +91,7 @@ public class ProductController {
 实际接口通常返回结构化数据，而不是拼接字符串。可以使用已经学过的 `record` 表示只读的响应对象：
 
 ```java
+// 版本：Java 17/21；Java 8 请改用普通类、普通字符串或 Collectors.toList()。
 public record ProductResponse(
         long id,
         String name,
@@ -93,6 +101,7 @@ public record ProductResponse(
 ```
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 @Service
 public class ProductService {
     public ProductResponse findProduct() {
@@ -102,6 +111,7 @@ public class ProductService {
 ```
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 @RestController
 public class ProductController {
     private final ProductService productService;
@@ -134,6 +144,7 @@ public class ProductController {
 如果每个商品都写一个 `@GetMapping`，接口会重复。可以使用路径参数：
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 @GetMapping("/products/{id}")
 public ProductResponse getProduct(@PathVariable long id) {
     return productService.findProduct(id);
@@ -143,6 +154,7 @@ public ProductResponse getProduct(@PathVariable long id) {
 当请求为 `GET /products/7` 时，Spring 会把路径中的 `7` 转换为 `long`，传给参数 `id`。Service 可以根据 id 查询：
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 @Service
 public class ProductService {
     public ProductResponse findProduct(long id) {
@@ -160,6 +172,7 @@ public class ProductService {
 Java 允许方法返回 `null`，但调用方如果直接访问返回值，可能发生空指针异常。`Optional` 更明确地表达“可能没有商品”：
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 public Optional<ProductResponse> findProduct(long id) {
     if (id == 1) {
         return Optional.of(new ProductResponse(1L, "保温杯", 20));
@@ -171,6 +184,7 @@ public Optional<ProductResponse> findProduct(long id) {
 Controller 决定 HTTP 响应状态：
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 @GetMapping("/products/{id}")
 public ResponseEntity<ProductResponse> getProduct(
         @PathVariable long id) {
@@ -196,6 +210,7 @@ GET /products?keyword=杯&page=1
 Controller 可以这样接收：
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 @GetMapping("/products")
 public String searchProducts(
         @RequestParam String keyword,
@@ -209,6 +224,7 @@ public String searchProducts(
 也可以提供默认值：
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 @RequestParam(defaultValue = "1") int page
 ```
 
@@ -236,6 +252,7 @@ Content-Type: application/json
 用 `record` 表示请求数据：
 
 ```java
+// 版本：Java 17/21；Java 8 请改用普通类、普通字符串或 Collectors.toList()。
 public record CreateProductRequest(
         String name,
         int priceInCents,
@@ -247,6 +264,7 @@ public record CreateProductRequest(
 Controller 使用 `@RequestBody` 接收 JSON：
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 @PostMapping("/products")
 public ProductResponse createProduct(
         @RequestBody CreateProductRequest request) {
@@ -267,6 +285,7 @@ Spring Boot 会把 JSON 字段转换成 `CreateProductRequest` 对象，再传�
 查询成功通常返回 200；创建资源成功通常使用 201 Created：
 
 ```java
+// 版本：Java 8、Java 17 均适用。
 @PostMapping("/products")
 public ResponseEntity<ProductResponse> createProduct(
         @RequestBody CreateProductRequest request) {
@@ -317,5 +336,5 @@ Controller：返回状态码和 JSON 响应
 ## 本阶段学习进度
 
 - 已掌握：启动类、Bean、构造器注入、Controller、Service、JSON 响应、路径参数、查询参数、请求体、Optional、ResponseEntity、HTTP 200/201/400/404，以及三层职责。
-- 待实践：安装 JDK 21，创建并启动 Spring Boot 项目，实际发送 GET 和 POST 请求。
+- 待实践：安装 JDK 8 或 17，创建并启动 Spring Boot 项目，实际发送 GET 和 POST 请求。
 - 下一步：进入 MyBatis，学习 Mapper 接口、SQL 与 Java 方法的对应关系，再连接 MySQL。
