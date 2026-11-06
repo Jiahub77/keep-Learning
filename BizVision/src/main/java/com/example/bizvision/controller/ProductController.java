@@ -1,10 +1,11 @@
 package com.example.bizvision.controller;
 
+import com.example.bizvision.dto.CreateProductRequest;
+import com.example.bizvision.dto.ProductPageResponse;
 import com.example.bizvision.service.ProductService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.example.bizvision.dto.ProductResponse;
 
 import java.util.List;
@@ -20,10 +21,8 @@ public class ProductController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<List<ProductResponse>> findAll() {
-        List<ProductResponse> result = productService.findAll();
-
-        return ResponseEntity.ok(result);
+    public ProductPageResponse findAll(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "2") int size) {
+        return productService.findAll(page, size);
     }
 
     @GetMapping("/products/{id}")
@@ -33,6 +32,42 @@ public class ProductController {
         if (result.isPresent()) {
             return ResponseEntity.ok(result.get());
         }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/products")
+    public ResponseEntity<Long> createProduct(@RequestBody CreateProductRequest request) {
+        Long id =  productService.createProduct(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(id);
+    }
+
+    @PutMapping("/products/{id}")
+    public ResponseEntity<Long> updateProduct(@PathVariable Long id, @RequestBody CreateProductRequest request) {
+        Optional<Long> result =  productService.updateProduct(id, request);
+        if (result.isPresent()) {
+            return ResponseEntity.ok(result.get());
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/products/{id}")
+    public ResponseEntity<Long> deleteProduct(@PathVariable("id") long id) {
+        Optional<Long> resilt = productService.deleteProduct(id);
+        if (resilt.isPresent()){
+            return ResponseEntity.ok(resilt.get());
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    // 扣减库存
+    @PostMapping("/products/decrease-stock/{id}")
+    public ResponseEntity<Long> decreaseStock(@PathVariable("id") Long id, @RequestBody int quantity) {
+        Optional<Long> result = productService.decreaseStock(id, quantity);
+
+        if (result.isPresent()) {
+            return ResponseEntity.ok(result.get());
+        }
+
         return ResponseEntity.notFound().build();
     }
 }

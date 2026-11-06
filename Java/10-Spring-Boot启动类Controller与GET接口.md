@@ -194,7 +194,7 @@ Optional.empty 表示无结果，不是 Java null；isPresent 为 true 后才取
 
 本次只观察已有代码，不修改业务逻辑。待反馈：result 的实际值、下一条将执行的 return。概念讲解有；单步调试操作仍待确认，既有接口编译运行和最小实践状态不变。
 
-### 商品列表 GET /products（待实践）
+### 商品列表 GET /products（2026-11-05 已验证）
 
 本轮目标：单个商品返回对象，商品列表返回 JSON 数组。保留现有详情方法，在 Service 和 Controller 各新增 findAll 方法；依旧使用模拟数据。以下代码适用 Java 8、Java 17，兼容 Spring Boot 2.7.18。
 
@@ -220,11 +220,66 @@ public List<ProductResponse> findAll() {
 
 保存并以普通 Run 重启，访问 GET /products，预期 200 和含两个对象的 JSON 数组。GET /products/{id} 仍为详情路径，两者不冲突。当前没有空列表分支，空列表行为仅作预测：如果 Service 返回空 List，默认返回 200 和 []，不是单个商品不存在时的 404。
 
-待答题：反馈列表实际响应；预测返回空 List 的响应体。文档与概念讲解有，本轮答题、代码修改、编译运行及列表实践待完成；数据库实践没有。
+两题回答正确：用户反馈 [{"name":"保温杯","stock":20},{"name":"炒锅","stock":5}]，预测空 List 返回 []。导师核对代码并请求验证 HTTP 200、application/json 与该数组。本次复核 Controller 直接返回 List<ProductResponse>，默认返回 HTTP 200；已据当前源码对齐记录。文档、概念讲解、答题、代码修改、编译运行及最小列表实践有；当时空列表仅预测，后续已在 minStock=30 请求中实际验证；数据库实践没有。
+
+### 查询参数筛选商品列表（已运行验证，首条反馈待核对）
+
+本次将之前已学的查询参数与 Stream 筛选应用到列表，不重新讲集合或 Stream 基础。请求 GET /products?minStock=10，只保留库存大于等于 10 的商品。以下两段适用 Java 8、Java 17，兼容 Spring Boot 2.7.18。
+
+Service 增加 java.util.stream.Collectors 导入，替换 findAll：
+
+```java
+public List<ProductResponse> findAll(int minStock) {
+    return Arrays.asList(
+            new ProductResponse("保温杯", 20),
+            new ProductResponse("炒锅", 5)
+    ).stream()
+            .filter(product -> product.getStock() >= minStock)
+            .collect(Collectors.toList());
+}
+```
+
+Controller 增加 org.springframework.web.bind.annotation.RequestParam 导入，替换列表方法，保留详情方法与构造器：
+
+```java
+@GetMapping("/products")
+public List<ProductResponse> findAll(
+        @RequestParam(name = "minStock", defaultValue = "0") int minStock) {
+    return productService.findAll(minStock);
+}
+```
+
+不传 minStock 时用 0。这里筛选的是内存中的模拟列表，不是 MySQL WHERE 查询。Java 8 使用 Collectors.toList()，不使用 Stream.toList()。
+
+2026-11-05 用户反馈第一条为两件商品、第二条为 []，未反馈状态码。导师核对源码，参数传递和过滤条件均正确；实际请求 minStock=10 得到 HTTP 200 和仅保温杯，minStock=30 得到 HTTP 200 和 []。本轮代码修改、编译运行及筛选实践已验证，空列表响应已实际验证。用户最新反馈已更正为仅保温杯和 []，与本次实测一致，结果核对完成。断点调试仍按用户要求跳过、后补。
 
 理解应用如何启动、Controller 如何接收 HTTP 请求，以及如何返回一个简单的商品信息。
 
 ## 版本说明
+
+### minStock 非负校验（已运行，边界修正通过）
+
+本次约定最低库存不能为负。负数是合法 int，Spring 可以完成类型转换，必须另加规则判断；与 abc 不能转换成 int 的请求错误不同。本轮采用 Controller 内的显式校验，后续再实践 javax.validation 注解。示例适用 Java 8、Java 17 + Spring Boot 2.7.18。
+
+Controller 增加 org.springframework.http.HttpStatus 和 org.springframework.web.server.ResponseStatusException 导入，替换列表方法：
+
+```java
+@GetMapping("/products")
+public List<ProductResponse> findAll(
+        @RequestParam(name = "minStock", defaultValue = "0") int minStock) {
+    if (minStock < 0) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST, "最低库存不能小于 0");
+    }
+    return productService.findAll(minStock);
+}
+```
+
+ResponseStatusException 是 Spring 提供的异常，默认异常处理会按指定状态返回 400；这是本次主动拒绝非法查询参数的策略。默认错误响应不一定显示中文原因，验证以状态码为准。minStock=30 没有商品符合条件是正常查询，仍为 200 和 []。
+
+用户正确反馈 minStock=-1 返回 400、minStock=30 返回 200；导师实际请求验证一致。但源码使用了 minStock <= 0，误拦截允许的 0，导师进一步验证 minStock=0 和省略参数（默认 0）都返回 400。属于条件边界的逻辑错误，不是语法、编译或启动错误。不能仅凭最初两个用例通过就认定校验正确。
+
+学习者已自行将条件改为 minStock < 0，反馈 minStock=0 和省略参数都返回两件商品。导师检查源码并复验：-1 返回 400，0 和省略参数返回 200 与两件商品，30 返回 200 与 []。本轮文档、概念讲解、答题、代码修正、编译运行及最小校验实践均有，边界修正通过；这不代表完整商品模块已完成。下一步确认练习 MySQL 环境，准备数据源连接，数据库实践仍未开始；断点调试按用户要求后补。
 
 下面的 Spring 注解和分层思想适用于 Java 8、Java 17。使用 `record` 的代码片段仅适用于 Java 16+，本文按 Java 17/21 理解；Java 8 请改用普通 DTO 类。Java 8 项目通常使用支持 Java 8 的 Spring Boot 版本，Java 17 项目可以使用 Spring Boot 3；校验包分别常见 `javax.validation` 与 `jakarta.validation`。
 
