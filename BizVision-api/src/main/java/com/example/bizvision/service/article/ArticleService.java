@@ -1,5 +1,6 @@
 package com.example.bizvision.service.article;
 
+import com.example.bizvision.common.enums.ArticleStatus;
 import com.example.bizvision.dto.article.ArticlePageResponse;
 import com.example.bizvision.dto.article.ArticleRequest;
 import com.example.bizvision.dto.article.ArticleResponse;
@@ -103,7 +104,7 @@ public class ArticleService {
 
     private ArticleResponse toResponse(ArticleEntity entity) {
         return new ArticleResponse(entity.getId(), entity.getName(), entity.getContent(),
-                entity.getAuthor(), entity.getCreatedAt(), entity.getIs_on());
+                entity.getAuthor(), entity.getCreatedAt(), entity.getStatus());
     }
 
     private ArticleEntity toEntity(ArticleRequest request) {
@@ -133,6 +134,7 @@ public class ArticleService {
         entity.setName(name);
         entity.setContent(request.getContent());
         entity.setAuthor(author);
+        entity.setStatus(ArticleStatus.PUBLISHED);
 
         return entity;
     }

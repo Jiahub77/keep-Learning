@@ -1,5 +1,7 @@
 package com.example.bizvision.dto.article;
 
+import com.example.bizvision.common.enums.ArticleStatus;
+
 import java.time.LocalDateTime;
 
 public class ArticleResponse {
@@ -11,13 +13,13 @@ public class ArticleResponse {
     private final int isOn;
 
     public ArticleResponse(long id, String name, String content, String author,
-                           LocalDateTime createdAt, int isOn) {
+                           LocalDateTime createdAt, ArticleStatus status) {
         this.id = id;
         this.name = name;
         this.content = content;
         this.author = author;
         this.createdAt = createdAt;
-        this.isOn = isOn;
+        this.isOn = status == null? 0 : status.getCode();
     }
 
     public long getId() {

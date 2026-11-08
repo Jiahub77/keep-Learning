@@ -9,17 +9,17 @@ import java.util.List;
 @Mapper
 public interface ArticleMapper {
     // 列表查询：只查未删除的（is_on = 1）；created_at 起别名，避免依赖驼峰映射配置
-    @Select("SELECT id, name, content, author, is_on, created_at AS createdAt " +
+    @Select("SELECT id, name, content, author, is_on AS status, created_at AS createdAt " +
             "FROM articles WHERE is_on = 1 ORDER BY id DESC LIMIT #{size} OFFSET #{offset}")
     List<ArticleEntity> list(@Param("size") int size, @Param("offset") int offset);
 
     // id 查找：同样过滤已删除数据
-    @Select("SELECT id, name, content, author, is_on, created_at AS createdAt " +
+    @Select("SELECT id, name, content, author, is_on  AS status, created_at AS createdAt " +
             "FROM articles WHERE id = #{id} AND is_on = 1")
     ArticleEntity detail(@Param("id") long id);
 
     // 添加文章
-    @Insert("INSERT INTO articles(name, content, author) VALUES (#{name}, #{content}, #{author})")
+    @Insert("INSERT INTO articles(name, content, author, is_on) VALUES (#{name}, #{content}, #{author}, #{status})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int add(ArticleEntity article);
 

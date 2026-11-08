@@ -1,5 +1,7 @@
 package com.example.bizvision.entity.artilce;
 
+import com.example.bizvision.common.enums.ArticleStatus;
+
 import java.time.LocalDateTime;
 
 public class ArticleEntity {
@@ -7,7 +9,8 @@ public class ArticleEntity {
     private String name;
     private String content;
     private String author;
-    private int is_on;
+//    private int is_on;、
+    private ArticleStatus status;
     private LocalDateTime createdAt;
 
     public Long getId() {
@@ -42,12 +45,12 @@ public class ArticleEntity {
         this.author = author;
     }
 
-    public int getIs_on() {
-        return is_on;
+    public ArticleStatus getStatus() {
+        return status;
     }
 
-    public void setIs_on(int is_on) {
-        this.is_on = is_on;
+    public void setStatus(ArticleStatus status) {
+        this.status = status;
     }
 
     public LocalDateTime getCreatedAt() {
