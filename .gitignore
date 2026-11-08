@@ -1,0 +1,149 @@
+# ============================================================
+#  keep-learning / BizVision 仓库通用忽略规则
+#  说明：路径均相对仓库根目录；未加 "/" 前缀的规则在任意层级生效
+# ============================================================
+
+# ---------- 操作系统 ----------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ---------- 编辑器 / IDE ----------
+.idea/
+*.iml
+*.iws
+*.ipr
+*.hprof
+
+# VS Code（保留团队共享配置）
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+
+# Eclipse / STS / Spring Tool Suite
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+\#*\#
+.\#*
+
+# ---------- 环境变量与密钥（务必不要提交） ----------
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+secrets.properties
+
+# ---------- 日志 / 临时文件 ----------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.tmp
+*.temp
+*.bak
+*.orig
+
+# ---------- Java / Maven ----------
+target/
+build/
+out/
+bin/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+HELP.md
+.flattened-pom.xml
+dependency-reduced-pom.xml
+release.properties
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+.mvn/timing.properties
+
+# Maven Wrapper 必须入库，上面的 target/ 与 *.jar 规则对其放行
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ---------- Python（测试/运维脚本） ----------
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# ---------- Node / 前端（BizVision-admin） ----------
+node_modules/
+.pnpm-store/
+dist/
+dist-ssr/
+.vite/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+*.local
+npm-debug.log*
+yarn.lock.bak
+
+# Vite 依赖预构建 / 配置文件热更新产生的临时文件
+*.timestamp-*.mjs
+BizVision-admin/vite.config.js.timestamp-*.mjs
+
+# ---------- 本项目自定义 ----------
+# AI 工作区数据（本地记忆/会话记录，个人化内容不入库）
+# 若希望把 .workbuddy-ai/memory 的笔记一并版本化，删除下面一行即可
+.workbuddy-ai/
+
+# 本地数据库 / 导出文件
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.sql.gz
